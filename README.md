@@ -19,5 +19,5 @@ detection of lost datagrams is also included. The logged CSV file can be opened 
 to do the analysis.
 
 Tools:
-Microsoft Visual Studio 2022, .NET Framework 4.8
-This program has only been tested on the Windows 10 operating system.
+Microsoft Visual Studio 2022, .NET Framework 4.8, This program has only been tested on the 
+Windows 10 operating system.
