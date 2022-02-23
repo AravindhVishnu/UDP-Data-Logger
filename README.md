@@ -4,7 +4,7 @@ UDP Data Logger Client and Server Program which can be used for extracting data 
 Background:
 In an embedded device, it is useful to log the internal data for testing purpose. Usually the device
 sends out a select number of data with a fixed sample internal. The physical communication medium can
-be Serial RS422/RS485, USB, Ethernet, etc.
+be Serial RS232/RS485, USB, Ethernet, etc.
 
 Description:
 This program contains a UDP data logger client with GUI functionality. The embedded device acts as a
@@ -15,9 +15,9 @@ in case the embedded device is not available. As an example, the built-in server
 voltage waveform data once every 1ms. Configuration of the IP settings, viewing the communication
 data/status/speed, opening the CSV file and event log file are included as part of the GUI functionality.
 Retainment of the IP settings between each program start/end, setting default IP settings values and
-detection of lost datagrams is also included. The logged CSV file can be opened with Excel or Matlab
-to do the analysis.
+detection of lost datagrams is also included. The logged CSV file can be opened for instance with Excel 
+or Matlab to do the data analysis.
 
-Tools:
-Microsoft Visual Studio 2022, .NET Framework 4.8, This program has only been tested on the 
-Windows 10 operating system.
+Tools: Microsoft Visual Studio 2022, .NET Framework 4.8
+
+Note: This program has only been tested on the Windows 10 operating system.
