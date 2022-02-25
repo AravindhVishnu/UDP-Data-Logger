@@ -21,3 +21,5 @@ or Matlab to do the data analysis.
 Tools: Microsoft Visual Studio 2022, .NET Framework 4.8, Windows Forms
 
 Note: This program has only been tested on the Windows 10 operating system.
+
+![image](https://user-images.githubusercontent.com/70747761/155664177-829b02b8-9262-435b-b5ec-3bdc761e353f.png)
