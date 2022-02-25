@@ -18,6 +18,6 @@ Retainment of the IP settings between each program start/end, setting default IP
 detection of lost datagrams is also included. The logged CSV file can be opened for instance with Excel 
 or Matlab to do the data analysis.
 
-Tools: Microsoft Visual Studio 2022, .NET Framework 4.8
+Tools: Microsoft Visual Studio 2022, .NET Framework 4.8, Windows Forms
 
 Note: This program has only been tested on the Windows 10 operating system.
