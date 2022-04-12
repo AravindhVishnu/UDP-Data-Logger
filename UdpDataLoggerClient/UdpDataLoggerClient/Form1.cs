@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,9 +13,23 @@ using System.Net;
 using System.Net.Sockets;
 using System.Timers;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace UdpDataLoggerClient
 {
+    // UDP message struct containing three phase voltage waveform data that is send
+    // (as an example) in server mode.
+    public struct Msg
+    {
+        public float cnt;  // Simulation counter
+        public float una;  // Phase A voltage
+        public float unb;  // Phase B voltage
+        public float unc;  // Phase C voltage
+        public float uab;  // Phase to phase AB voltage
+        public float ubc;  // Phase to phase BC voltage
+        public float uca;  // Phase to phase CA voltage
+    };
+
     // UDP data logger client used to receive data from an embedded device.
     // After the logging is finished, the data is stored in a CSV file.
     // A UDP server has also been implemented in the same program for the purpose
@@ -28,13 +42,6 @@ namespace UdpDataLoggerClient
 
         private System.Timers.Timer _timer;
 
-        private bool _udp_com_running;
-
-        private float[] _values;
-        private byte[] _data;
-
-        private int _totalBytes;
-
         private IPEndPoint client_end_point;
         private EndPoint client_ep;
 
@@ -46,15 +53,40 @@ namespace UdpDataLoggerClient
 
         IFormatProvider _iFormatProvider;
 
+        // Is true if the UDP communication is running
+        private bool _udp_com_running;
+
+        // Managed struct data
+        private Msg _udpMsg;
+
+        // Unmanaged bytes array
+        private byte[] _data;
+
+        // Size of the unmanaged bytes array
+        private int _dataNbrOfBytes;
+
+        // Communication speed which is the total number of bytes that is sent or received once every 1s
+        private int _totalBytes;
+
+        // Is true if client mode is enabled (is false if server mode is enabled)
         private bool _client;
 
+        // Is true if the UDP connection attempt failed
         private bool _connectFailed;
 
+        // Is true only during the first UDP data transfer
         private bool _initTransfer;
+
+        // Header for the data that is sent/received
         private string _header;
 
+        // Previous value of simulation counter which is used to detect lost datagrams
         private float _prevValue;
+
+        // Counter used to generate three phase voltage waveforms
         private uint _tCnt;
+
+        // Simulation counter which is a multiple of DELTA_T
         private float _simulCnt;
 
         // Set this to the sample time with which the embedded device sends out data.
@@ -248,8 +280,19 @@ namespace UdpDataLoggerClient
             // Reduce/prevent flicker when the list box is updated
             this.DoubleBuffered = true;
 
-            _values = new float[] { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
-            _data = new byte[_values.Length * sizeof(float)];
+            // Intialize the managed struct data (which are the three phase
+            // voltage waveform values)
+            _udpMsg.cnt = 0.0f;
+            _udpMsg.una = 0.0f;
+            _udpMsg.unb = 0.0f;
+            _udpMsg.unc = 0.0f;
+            _udpMsg.uab = 0.0f;
+            _udpMsg.ubc = 0.0f;
+            _udpMsg.uca = 0.0f;
+
+            // Intialize the unmanaged bytes array
+            _dataNbrOfBytes = Marshal.SizeOf(_udpMsg);
+            _data = new byte[_dataNbrOfBytes];
             for (int i = 0; i < _data.Length; i++)
             {
                 _data[i] = 0;
@@ -257,7 +300,6 @@ namespace UdpDataLoggerClient
 
             _prevValue = 0.0f;
             _totalBytes = 0;
-
             _tCnt = 0;
             _simulCnt = 0;
 
@@ -588,8 +630,11 @@ namespace UdpDataLoggerClient
                 // Generate simulated data to be sent
                 this.generateValues();
 
-                // Convert from float array to byte array
-                Buffer.BlockCopy(_values, 0, _data, 0, _data.Length);
+                // Convert from a managed struct to an unmanaged bytes array
+                IntPtr ptr = Marshal.AllocHGlobal(_dataNbrOfBytes);
+                Marshal.StructureToPtr(_udpMsg, ptr, true);
+                Marshal.Copy(ptr, _data, 0, _dataNbrOfBytes);
+                Marshal.FreeHGlobal(ptr);
 
                 string dataMessage;
                 if (_initTransfer == true)
@@ -600,7 +645,7 @@ namespace UdpDataLoggerClient
                 else
                 {
                     // Structure the data in CSV format with max three decimals
-                    dataMessage = String.Format(_iFormatProvider, "{0:0.###},{1:0.###},{2:0.###},{3:0.###},{4:0.###},{5:0.###},{6:0.###}", _values[0], _values[1], _values[2], _values[3], _values[4], _values[5], _values[6]);
+                    dataMessage = String.Format(_iFormatProvider, "{0:0.###},{1:0.###},{2:0.###},{3:0.###},{4:0.###},{5:0.###},{6:0.###}", _udpMsg.cnt, _udpMsg.una, _udpMsg.unb, _udpMsg.unc, _udpMsg.uab, _udpMsg.ubc, _udpMsg.uca);
                 }
                 this.DoAddToListBox(dataMessage);
 
@@ -651,11 +696,14 @@ namespace UdpDataLoggerClient
                 string textMessage = String.Format(_iFormatProvider, "{0}, Sample time: {1} - Number of bytes received: {2}", time_now_text, _simulCnt, bytes);
                 Console.WriteLine(textMessage);
 
-                // Convert from byte array to float array
-                Buffer.BlockCopy(_data, 0, _values, 0, _data.Length);
+                // Convert from an unmanaged bytes array to a managed struct
+                IntPtr ptr = Marshal.AllocHGlobal(_dataNbrOfBytes);
+                Marshal.Copy(_data, 0, ptr, _dataNbrOfBytes);
+                _udpMsg = (Msg)Marshal.PtrToStructure(ptr, _udpMsg.GetType());
+                Marshal.FreeHGlobal(ptr);
 
                 // Detect lost samples
-                float diff = _values[0] - _prevValue;
+                float diff = _udpMsg.cnt - _prevValue;
                 if (diff > (1.1f * DELTA_T))
                 {
                     uint lostDatagrams = (uint)Math.Round(diff / DELTA_T);
@@ -663,7 +711,7 @@ namespace UdpDataLoggerClient
                     Console.WriteLine(textMessage);
                     Trace.WriteLine(textMessage, "UDP Data Logger");
                 }
-                _prevValue = _values[0];  // Feedback
+                _prevValue = _udpMsg.cnt;  // Feedback
 
                 string dataMessage;
                 if (_initTransfer == true)
@@ -674,7 +722,7 @@ namespace UdpDataLoggerClient
                 else
                 {
                     // Structure the data in CSV format with max three decimals
-                    dataMessage = String.Format(_iFormatProvider, "{0:0.###},{1:0.###},{2:0.###},{3:0.###},{4:0.###},{5:0.###},{6:0.###}", _values[0], _values[1], _values[2], _values[3], _values[4], _values[5], _values[6]);
+                    dataMessage = String.Format(_iFormatProvider, "{0:0.###},{1:0.###},{2:0.###},{3:0.###},{4:0.###},{5:0.###},{6:0.###}", _udpMsg.cnt, _udpMsg.una, _udpMsg.unb, _udpMsg.unc, _udpMsg.uab, _udpMsg.ubc, _udpMsg.uca);
                 }
                 this.DoAddToListBox(dataMessage);
 
@@ -833,14 +881,14 @@ namespace UdpDataLoggerClient
             float u_bc = u_nb - u_nc;
             float u_ca = u_nc - u_na;
 
-            // Copy the simulated data to the _values float array
-            _values[0] = _simulCnt;
-            _values[1] = u_na;
-            _values[2] = u_nb;
-            _values[3] = u_nc;
-            _values[4] = u_ab;
-            _values[5] = u_bc;
-            _values[6] = u_ca;
+            // Copy the simulated data to the message struct
+            _udpMsg.cnt = _simulCnt;
+            _udpMsg.una = u_na;
+            _udpMsg.unb = u_nb;
+            _udpMsg.unc = u_nc;
+            _udpMsg.uab = u_ab;
+            _udpMsg.ubc = u_bc;
+            _udpMsg.uca = u_ca;
         }
 
         private void resetValues()
@@ -850,10 +898,15 @@ namespace UdpDataLoggerClient
             {
                 _data[i] = 0;
             }
-            for (int i = 0; i < _values.Length; i++)
-            {
-                _values[i] = 0;
-            }
+
+            _udpMsg.cnt = 0.0f;
+            _udpMsg.una = 0.0f;
+            _udpMsg.unb = 0.0f;
+            _udpMsg.unc = 0.0f;
+            _udpMsg.uab = 0.0f;
+            _udpMsg.ubc = 0.0f;
+            _udpMsg.uca = 0.0f;
+
             _tCnt = 0;
             _simulCnt = 0.0f;
             _prevValue = 0.0f;
