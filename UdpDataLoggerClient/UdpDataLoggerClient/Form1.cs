@@ -19,6 +19,7 @@ namespace UdpDataLoggerClient
 {
     // UDP message struct containing three phase voltage waveform data that is send
     // (as an example) in server mode.
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]  // Remove extra padding
     public struct Msg
     {
         public float cnt;  // Simulation counter
