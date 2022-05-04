@@ -91,9 +91,9 @@ namespace UdpDataLoggerClient
         private float _simulCnt;
 
         // Set this to the sample time with which the embedded device sends out data.
-        // As an example (using the built-in server), the sample time is set to 1ms.
+        // As an example (using the built-in server), the sample time is set to 100ms.
         // This value is also used to detect lost datagrams.
-        private const float DELTA_T = 0.001f;
+        private const float DELTA_T = 0.1f;
 
         // Delegates needed for the InvokeRequired code pattern which is useful in
         // multi threaded event driven GUI code.
@@ -802,7 +802,7 @@ namespace UdpDataLoggerClient
         {
             // Just as an example, generate simulation data which is three phase voltage waveforms
             const float U_NET = 230.0f;  // 230V
-            const float F_NET = 10.0f;  // 10Hz
+            const float F_NET = 0.1f;  // 0,1Hz
             const float M_2PI = 2.0f * (float)Math.PI;
             const float TWOPIDIV3 = (2.0f / 3.0f) * (float)Math.PI;
             const float FOURPIDIV3 = (4.0f / 3.0f) * (float)Math.PI;
