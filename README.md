@@ -2,6 +2,7 @@
 UDP Data Logger Client and Server Program which can be used for extracting data from an Embedded Device
 
 Background:
+
 In an embedded device, it is useful to log the internal data for testing purpose. Usually the device
 sends out a select number of data with a fixed sample internal. The physical communication medium can
 be Serial RS232/RS485, USB, Ethernet, etc.
@@ -9,6 +10,7 @@ be Serial RS232/RS485, USB, Ethernet, etc.
 Client
 
 Description:
+
 This program contains a UDP data logger client with GUI functionality. The embedded device acts as a
 server which continuously sends out datagrams that the client receives/logs and stores in a CSV file.
 The data content that the client expects to receive and the sample rate can easily be modified.
@@ -38,6 +40,7 @@ the UdpLoggerClient folder.
 The IP address and port of the client and server are hardcoded and are the following:
 
 Server: 192.168.1.3 52000
+
 Client: 192.168.1.2 52000
 
 This CCS project is intended to be run on the ICE (industrial communications engine) v2 development board.
