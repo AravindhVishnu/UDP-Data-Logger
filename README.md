@@ -26,6 +26,7 @@ Tools: Microsoft Visual Studio 2022, .NET Framework 4.8, Windows Forms
 
 Note: This program has only been tested on the Windows 10 operating system.
 
+Client GUI:
 ![image](https://user-images.githubusercontent.com/70747761/155664177-829b02b8-9262-435b-b5ec-3bdc761e353f.png)
 
 Server
@@ -77,4 +78,5 @@ Open Code Composer Studio and go to the Project Explorer.
 In the project explorer, choose import CCS project. Then select the
 UdpDataLoggerServer folder as the search directory.
 
+Output in the serial terminal program:
 ![image](https://user-images.githubusercontent.com/70747761/166661223-8aa19c1d-4e4d-4f85-9808-9be0f3259449.png)
