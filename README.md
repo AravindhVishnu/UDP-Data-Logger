@@ -76,8 +76,10 @@ edma3_lld_2_12_05_30E
 Instructions: 
 
 Open Code Composer Studio and go to the Project Explorer.
-In the project explorer, choose import CCS project. Then select the
-UdpDataLoggerServer folder as the search directory.
+In the project explorer, choose import CCS project. 
+Then select the UdpDataLoggerServer folder as the search directory. 
+Jumpers J18 and J19 must be set to control the Ethernet ports using CPSW 
+(Common Platform Ethernet Switch). For CPSW mode, connect Pin1 and Pin2.
 
 Output in the serial terminal program:
 
