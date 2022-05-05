@@ -28,7 +28,7 @@ Note: This program has only been tested on the Windows 10 operating system.
 
 Client GUI:
 
-![image](https://user-images.githubusercontent.com/70747761/155664177-829b02b8-9262-435b-b5ec-3bdc761e353f.png)
+![image](https://user-images.githubusercontent.com/70747761/166882748-8d30f961-ddb0-42ab-8095-1e819926de69.png)
 
 Server
 
